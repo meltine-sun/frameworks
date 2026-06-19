@@ -12,7 +12,7 @@ public class FrontControllerServlet extends HttpServlet{
     
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
-           processRequest(req,resp);
+        processRequest(req,resp);
     } 
 
      @Override
