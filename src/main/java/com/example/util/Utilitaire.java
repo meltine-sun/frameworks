@@ -67,8 +67,8 @@ public class Utilitaire {
         return resultat;
     }
 
-    public static Map<String, MappingInfo> getMapping(String nomPackage, Class<? extends Annotation> annotationClass, Class<? extends Annotation> annotationMethod) throws Exception{
-        Map<String, MappingInfo> resuMap = new HashMap<>();
+    public static Map<UrlMethod, MappingInfo> getMapping(String nomPackage, Class<? extends Annotation> annotationClass, Class<? extends Annotation> annotationMethod) throws Exception{
+        Map<UrlMethod, MappingInfo> resuMap = new HashMap<>();
         
         List<Class<?>> classes = getClassesAnnote(nomPackage, annotationClass);
 
@@ -77,12 +77,17 @@ public class Utilitaire {
 
             for(Method m : methodes){
                 UrlMapping urlMapping = (UrlMapping) m.getAnnotation(annotationMethod);
+
                 String url = urlMapping.value();
+                String urlmethod = urlMapping.method();
+
+                UrlMethod cle = new UrlMethod(url, urlmethod);
+
                 String nomClasse = c.getName();
                 String nomMethod = m.getName();
 
                 MappingInfo mappingInfo = new MappingInfo(nomClasse, nomMethod, url);
-                resuMap.put(url, mappingInfo);
+                resuMap.put(cle, mappingInfo);
             }
             
         }

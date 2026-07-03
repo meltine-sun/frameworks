@@ -8,6 +8,7 @@ import java.util.Map;
 import com.example.annotation.Controller;
 import com.example.annotation.UrlMapping;
 import com.example.util.MappingInfo;
+import com.example.util.UrlMethod;
 import com.example.util.Utilitaire;
 
 import jakarta.servlet.ServletException;
@@ -18,7 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class FrontControllerServlet extends HttpServlet{
 
     // private List<String> listClass = new ArrayList<>();
-    private Map<String, MappingInfo> mapping = new HashMap<>();
+    private Map<UrlMethod, MappingInfo> mapping = new HashMap<>();
     
     @Override
     public void init() throws ServletException{
@@ -48,21 +49,26 @@ public class FrontControllerServlet extends HttpServlet{
         PrintWriter out = resp.getWriter();
         out.println(url); 
         
-        if(mapping.containsKey(url)) {
-            MappingInfo info = mapping.get(url);
-            out.println("Url trouvée : " + url);
+        String httpMethod = req.getMethod();
+
+        UrlMethod cle = new UrlMethod(url, httpMethod);
+
+        if(mapping.containsKey(cle)) {
+            MappingInfo info = mapping.get(cle);
+            out.println("Url trouvée : " + url + " (" + httpMethod + ")");
             out.println("Classe : " + info.getNomClasse());
             out.println("Méthode : " + info.getNomMethod());
         } else {
+            out.println("Url inconnue : " + url + " (" + httpMethod + ")");
             out.println("Voici toutes les méthodes :");
             if(mapping.isEmpty()) {
                 out.println("Aucune route trouvée.");
             } else {
-                for(Map.Entry<String, MappingInfo> map : mapping.entrySet()) {
-                    out.println("Url : " + map.getKey());
+                for(Map.Entry<UrlMethod, MappingInfo> map : mapping.entrySet()) {
+                    out.println("Url : " + map.getKey().getUrl());
+                    out.println("Method : " + map.getKey().getMethod());
                     out.println("Classe : " + map.getValue().getNomClasse());
                     out.println("Méthodes : " + map.getValue().getNomMethod());
-
                 }
             }
         }
