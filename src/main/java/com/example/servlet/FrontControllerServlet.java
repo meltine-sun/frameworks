@@ -2,10 +2,12 @@ package com.example.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.example.annotation.Controller;
+import com.example.annotation.UrlMapping;
+import com.example.util.MappingInfo;
 import com.example.util.Utilitaire;
 
 import jakarta.servlet.ServletException;
@@ -15,18 +17,15 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class FrontControllerServlet extends HttpServlet{
 
-    private List<String> listClass = new ArrayList<>();
+    // private List<String> listClass = new ArrayList<>();
+    private Map<String, MappingInfo> mapping = new HashMap<>();
     
     @Override
     public void init() throws ServletException{
         try {
             String packageName = getServletContext().getInitParameter("package");
 
-            List<Class<?>> classes = Utilitaire.getClassesAnnote(packageName, Controller.class);
-
-            for(Class<?> c : classes) {
-                listClass.add(c.getName());
-            }
+            mapping = Utilitaire.getMapping(packageName, Controller.class, UrlMapping.class);
 
         } catch (Exception e) {
             throw new ServletException(e);
@@ -45,16 +44,26 @@ public class FrontControllerServlet extends HttpServlet{
 
     private void processRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
         resp.setContentType("text/plain");
-        String url = req.getRequestURL().toString();
+        String url = req.getRequestURI().substring(req.getContextPath().length());
         PrintWriter out = resp.getWriter();
         out.println(url); 
         
-        out.println("Classes with @Controller annotation:");
-        if(listClass.isEmpty()) {
-            out.println("No classes found with @Controller annotation.");
+        if(mapping.containsKey(url)) {
+            MappingInfo info = mapping.get(url);
+            out.println("Url trouvée : " + url);
+            out.println("Classe : " + info.getNomClasse());
+            out.println("Méthode : " + info.getNomMethod());
         } else {
-            for(String className : listClass) {
-                out.println(className);
+            out.println("Voici toutes les méthodes :");
+            if(mapping.isEmpty()) {
+                out.println("Aucune route trouvée.");
+            } else {
+                for(Map.Entry<String, MappingInfo> map : mapping.entrySet()) {
+                    out.println("Url : " + map.getKey());
+                    out.println("Classe : " + map.getValue().getNomClasse());
+                    out.println("Méthodes : " + map.getValue().getNomMethod());
+
+                }
             }
         }
     }

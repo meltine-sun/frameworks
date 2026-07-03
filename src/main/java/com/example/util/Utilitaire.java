@@ -2,9 +2,14 @@ package com.example.util;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.example.annotation.UrlMapping;
 
 public class Utilitaire {
     
@@ -50,4 +55,39 @@ public class Utilitaire {
         }
         return resultat;
     }
+
+    public static List<Method> getMethodesAnnote(Class<?> classe, Class<? extends Annotation> annotation){
+        List<Method> resultat = new ArrayList<>();
+
+        for(Method m : classe.getDeclaredMethods()){
+            if(m.isAnnotationPresent(annotation)){
+                resultat.add(m);
+            }
+        }
+        return resultat;
+    }
+
+    public static Map<String, MappingInfo> getMapping(String nomPackage, Class<? extends Annotation> annotationClass, Class<? extends Annotation> annotationMethod) throws Exception{
+        Map<String, MappingInfo> resuMap = new HashMap<>();
+        
+        List<Class<?>> classes = getClassesAnnote(nomPackage, annotationClass);
+
+        for(Class<?> c : classes){
+            List<Method> methodes = getMethodesAnnote(c, annotationMethod);
+
+            for(Method m : methodes){
+                UrlMapping urlMapping = (UrlMapping) m.getAnnotation(annotationMethod);
+                String url = urlMapping.value();
+                String nomClasse = c.getName();
+                String nomMethod = m.getName();
+
+                MappingInfo mappingInfo = new MappingInfo(nomClasse, nomMethod, url);
+                resuMap.put(url, mappingInfo);
+            }
+            
+        }
+
+        return resuMap;
+    }
+
 }
