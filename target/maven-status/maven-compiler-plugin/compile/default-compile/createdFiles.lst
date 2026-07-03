@@ -1,4 +1,6 @@
 com/example/servlet/FrontControllerServlet.class
+com/example/util/MappingInfo.class
 com/example/App.class
 com/example/annotation/Controller.class
+com/example/annotation/UrlMapping.class
 com/example/util/Utilitaire.class
