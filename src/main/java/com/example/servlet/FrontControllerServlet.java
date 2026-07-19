@@ -2,12 +2,14 @@ package com.example.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.example.annotation.Controller;
 import com.example.annotation.UrlMapping;
 import com.example.util.MappingInfo;
+import com.example.util.ModelAndView;
 import com.example.util.UrlMethod;
 import com.example.util.Utilitaire;
 
@@ -18,18 +20,24 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class FrontControllerServlet extends HttpServlet{
 
-    // private List<String> listClass = new ArrayList<>();
     private Map<UrlMethod, MappingInfo> mapping = new HashMap<>();
-    
+
     @Override
+    @SuppressWarnings("unchecked")
     public void init() throws ServletException{
-        try {
-            String packageName = getServletContext().getInitParameter("package");
+        Object mappingContext = getServletContext().getAttribute("mapping");
 
-            mapping = Utilitaire.getMapping(packageName, Controller.class, UrlMapping.class);
+        if(mappingContext != null) {
+            mapping = (Map<UrlMethod, MappingInfo>) mappingContext;
+        } else {
+            try {
+                String packageName = getServletContext().getInitParameter("package");
 
-        } catch (Exception e) {
-            throw new ServletException(e);
+                mapping = Utilitaire.getMapping(packageName, Controller.class, UrlMapping.class);
+
+            } catch (Exception e) {
+                throw new ServletException(e);
+            }
         }
     }
 
@@ -58,6 +66,27 @@ public class FrontControllerServlet extends HttpServlet{
             out.println("Url trouvée : " + url + " (" + httpMethod + ")");
             out.println("Classe : " + info.getNomClasse());
             out.println("Méthode : " + info.getNomMethod());
+
+            try {
+                Class<?> classe = Class.forName(info.getNomClasse());
+                Object instance = classe.getDeclaredConstructor().newInstance();
+                Method methode = classe.getMethod(info.getNomMethod());
+
+                Object resultat = methode.invoke(instance);
+
+                if(resultat instanceof ModelAndView) {
+                    ModelAndView modelAndView = (ModelAndView) resultat;
+
+                    out.println("Vue : " + modelAndView.getVue());
+                    out.println("Données : " + modelAndView.getDonnees());
+                } else {
+                    out.println("Attention : la méthode ne retourne pas un ModelAndView.");
+                }
+
+            } catch (Exception e) {
+                throw new ServletException("Erreur lors de l'exécution de " + info.getNomClasse() + "." + info.getNomMethod(), e);
+            }
+
         } else {
             out.println("Url inconnue : " + url + " (" + httpMethod + ")");
             out.println("Voici toutes les méthodes :");
