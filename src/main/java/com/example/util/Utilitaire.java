@@ -12,7 +12,7 @@ import java.util.Map;
 import com.example.annotation.UrlMapping;
 
 public class Utilitaire {
-    
+
     public static List<Class<?>> getClasses(String packageName)
         throws Exception {
 
@@ -30,17 +30,32 @@ public class Utilitaire {
 
         File directory = new File(resource.toURI());
 
+        explorerRepertoire(directory, packageName, classes);
+
+        return classes;
+    }
+
+    private static void explorerRepertoire(File directory, String packageCourant, List<Class<?>> classes) throws Exception {
+
+        if(!directory.exists()) {
+            return;
+        }
+
         for(File file : directory.listFiles()) {
 
-            if(file.getName().endsWith(".class")) {
+            if(file.isDirectory()) {
 
-                String className = packageName + "." + file.getName().replace(".class", "");
+                String sousPackage = packageCourant + "." + file.getName();
+
+                explorerRepertoire(file, sousPackage, classes);
+
+            } else if(file.getName().endsWith(".class")) {
+
+                String className = packageCourant + "." + file.getName().replace(".class", "");
 
                 classes.add(Class.forName(className));
             }
         }
-
-        return classes;
     }
 
     public static List<Class<?>> getClassesAnnote(String packageName, Class<? extends Annotation> annotation) throws Exception {
@@ -69,7 +84,7 @@ public class Utilitaire {
 
     public static Map<UrlMethod, MappingInfo> getMapping(String nomPackage, Class<? extends Annotation> annotationClass, Class<? extends Annotation> annotationMethod) throws Exception{
         Map<UrlMethod, MappingInfo> resuMap = new HashMap<>();
-        
+
         List<Class<?>> classes = getClassesAnnote(nomPackage, annotationClass);
 
         for(Class<?> c : classes){
@@ -83,13 +98,21 @@ public class Utilitaire {
 
                 UrlMethod cle = new UrlMethod(url, urlmethod);
 
+                // on vérifie qu'aucune autre méthode n'utilise déjà cette url + ce verbe
+                if(resuMap.containsKey(cle)) {
+                    MappingInfo existant = resuMap.get(cle);
+                    throw new IllegalStateException(
+                        "L'url '" + url + "' avec la méthode '" + urlmethod +
+                        "' est déjà associée à " + existant.getNomClasse() + "." + existant.getNomMethod());
+                }
+
                 String nomClasse = c.getName();
                 String nomMethod = m.getName();
 
                 MappingInfo mappingInfo = new MappingInfo(nomClasse, nomMethod, url);
                 resuMap.put(cle, mappingInfo);
             }
-            
+
         }
 
         return resuMap;

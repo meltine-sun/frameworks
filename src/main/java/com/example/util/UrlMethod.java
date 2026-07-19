@@ -8,7 +8,7 @@ public class UrlMethod {
 
     public UrlMethod(String url, String method) {
         this.url = url;
-        this.method = method;
+        this.method = method.toUpperCase();
     }
 
     public String getUrl() {
@@ -24,7 +24,7 @@ public class UrlMethod {
     }
 
     public void setMethod(String method) {
-        this.method = method;
+        this.method = method.toUpperCase();
     }
 
     @Override
