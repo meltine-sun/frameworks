@@ -3,15 +3,19 @@ package com.example.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.example.annotation.Controller;
+import com.example.annotation.RestAPI;
 import com.example.annotation.UrlMapping;
 import com.example.util.MappingInfo;
 import com.example.util.ModelAndView;
 import com.example.util.UrlMethod;
 import com.example.util.Utilitaire;
+import com.google.gson.Gson;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -19,7 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class FrontControllerServlet extends HttpServlet{
-
+  
     private Map<UrlMethod, MappingInfo> mapping = new HashMap<>();
 
     @Override
@@ -52,35 +56,59 @@ public class FrontControllerServlet extends HttpServlet{
     } 
 
     private void processRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
-        resp.setContentType("text/plain");
+
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
+
         String url = req.getRequestURI().substring(req.getContextPath().length());
         PrintWriter out = resp.getWriter();
-        out.println(url); 
-        
+
+        Map<String, String[]> parametres = req.getParameterMap(); 
+                
         String httpMethod = req.getMethod();
 
         UrlMethod cle = new UrlMethod(url, httpMethod);
 
         if(mapping.containsKey(cle)) {
             MappingInfo info = mapping.get(cle);
-            out.println("Url trouvée : " + url + " (" + httpMethod + ")");
-            out.println("Classe : " + info.getNomClasse());
-            out.println("Méthode : " + info.getNomMethod());
 
             try {
                 Class<?> classe = Class.forName(info.getNomClasse());
                 Object instance = classe.getDeclaredConstructor().newInstance();
-                Method methode = classe.getMethod(info.getNomMethod());
 
-                Object resultat = methode.invoke(instance);
+                Method methode = Utilitaire.trouverMethode(classe, info.getNomMethod());
 
-                if(resultat instanceof ModelAndView) {
+                if(methode == null){
+                    throw new ServletException("Méthode introuvable : " + info.getNomMethod());
+                }
+
+                Object[] arguments = Utilitaire.getArguments(methode, parametres);
+
+                Object resultat = methode.invoke(instance, arguments);
+
+                boolean estJson = methode.isAnnotationPresent(RestAPI.class);
+
+                if(estJson)
+                {
+                    Gson gson = new Gson();
+                    String json = gson.toJson(resultat);
+                    resp.setContentType("application/json");
+                    resp.getWriter().write(json);
+                    return;
+
+
+                } else if(resultat instanceof ModelAndView) {
                     ModelAndView modelAndView = (ModelAndView) resultat;
 
-                    out.println("Vue : " + modelAndView.getVue());
-                    out.println("Données : " + modelAndView.getDonnees());
+                    for(Map.Entry<String, Object> entry : modelAndView.getDonnees().entrySet())
+                    {
+                        req.setAttribute(entry.getKey(), entry.getValue());
+                    }
+                    req.getRequestDispatcher(modelAndView.getVue()).forward(req, resp); 
+
                 } else {
-                    out.println("Attention : la méthode ne retourne pas un ModelAndView.");
+                    resp.setContentType("text/plain;charset=UTF-8");
+                    out.println(resultat.toString());
                 }
 
             } catch (Exception e) {

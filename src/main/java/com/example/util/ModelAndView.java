@@ -5,11 +5,15 @@ import java.util.Map;
 
 public class ModelAndView {
     private String vue;
-    private Map<String, Object> donnees;
+    private Map<String, Object> donnees = new HashMap<>();
 
     public ModelAndView(String vue) {
         this.vue = vue;
         this.donnees = new HashMap<>();
+    }
+
+    public ModelAndView(){
+        
     }
 
     public ModelAndView(String vue, Map<String, Object> donnees) {

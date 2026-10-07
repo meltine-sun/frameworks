@@ -3,6 +3,7 @@ package com.example.util;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -117,5 +118,78 @@ public class Utilitaire {
 
         return resuMap;
     }
+
+    public static Method trouverMethode(Class<?> classe, String nomMethode){
+        Method methode = null;
+        for(Method m : classe.getMethods()){
+            if(m.getName().equals(nomMethode)){
+                methode = m;
+                break;
+            }
+        }
+        return methode;
+    }
+
+    public static Object[] getArguments(Method methode, Map<String, String[]> parametres){
+        Parameter[] parametresMethode = methode.getParameters();
+
+        Object[] arguments = new Object[parametresMethode.length];
+
+        for(int i = 0; i < parametresMethode.length; i++) {
+
+            Parameter parametre = parametresMethode[i];
+
+            String nomParametre = parametre.getName();
+
+            if(!parametre.isNamePresent()) {
+                System.out.println("ATTENTION : nom du paramètre perdu (" + nomParametre + "), compiler le projet test avec javac -parameters");
+            }
+
+            String[] valeurs = parametres.get(nomParametre);
+            String valeur = (valeurs != null && valeurs.length > 0) ? valeurs[0] : null;
+
+            arguments[i] = Utilitaire.convertir(valeur, parametre.getType());
+
+        }
+        return arguments;
+    }
+
+    public static Object convertir(String valeur, Class<?> type) {
+        if(valeur == null) {
+            return valeurParDefaut(type);
+        }
+ 
+        if(type == String.class) {
+            return valeur;
+        }
+ 
+        if(valeur.trim().isEmpty()) {
+            return valeurParDefaut(type);
+        }
+ 
+        try {
+            String v = valeur.trim();
+ 
+            if(type == Integer.class || type == int.class) return Integer.valueOf(v);
+            if(type == Long.class || type == long.class) return Long.valueOf(v);
+            if(type == Double.class || type == double.class) return Double.valueOf(v);
+            if(type == Float.class || type == float.class) return Float.valueOf(v);
+            if(type == Boolean.class || type == boolean.class) return Boolean.valueOf(v);
+        } catch (NumberFormatException e) {
+            return valeurParDefaut(type);
+        }
+ 
+        return null;
+    }
+ 
+    private static Object valeurParDefaut(Class<?> type) {
+        if(type == int.class) return 0;
+        if(type == long.class) return 0L;
+        if(type == double.class) return 0.0;
+        if(type == float.class) return 0f;
+        if(type == boolean.class) return false;
+        return null;
+    }
+
 
 }
