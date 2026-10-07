@@ -3,6 +3,8 @@ package com.example.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,9 +56,15 @@ public class FrontControllerServlet extends HttpServlet{
     } 
 
     private void processRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
+
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
+
         String url = req.getRequestURI().substring(req.getContextPath().length());
         PrintWriter out = resp.getWriter();
-        
+
+        Map<String, String[]> parametres = req.getParameterMap(); 
+                
         String httpMethod = req.getMethod();
 
         UrlMethod cle = new UrlMethod(url, httpMethod);
@@ -67,9 +75,16 @@ public class FrontControllerServlet extends HttpServlet{
             try {
                 Class<?> classe = Class.forName(info.getNomClasse());
                 Object instance = classe.getDeclaredConstructor().newInstance();
-                Method methode = classe.getMethod(info.getNomMethod());
 
-                Object resultat = methode.invoke(instance);
+                Method methode = Utilitaire.trouverMethode(classe, info.getNomMethod());
+
+                if(methode == null){
+                    throw new ServletException("Méthode introuvable : " + info.getNomMethod());
+                }
+
+                Object[] arguments = Utilitaire.getArguments(methode, parametres);
+
+                Object resultat = methode.invoke(instance, arguments);
 
                 boolean estJson = methode.isAnnotationPresent(RestAPI.class);
 
@@ -80,6 +95,8 @@ public class FrontControllerServlet extends HttpServlet{
                     resp.setContentType("application/json");
                     resp.getWriter().write(json);
                     return;
+
+
                 } else if(resultat instanceof ModelAndView) {
                     ModelAndView modelAndView = (ModelAndView) resultat;
 
