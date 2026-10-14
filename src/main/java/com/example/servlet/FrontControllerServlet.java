@@ -100,6 +100,11 @@ public class FrontControllerServlet extends HttpServlet{
                 } else if(resultat instanceof ModelAndView) {
                     ModelAndView modelAndView = (ModelAndView) resultat;
 
+                    if (modelAndView.getRedirect() != null) {
+                        resp.sendRedirect(req.getContextPath() + modelAndView.getRedirect());
+                        return;
+                    }
+
                     for(Map.Entry<String, Object> entry : modelAndView.getDonnees().entrySet())
                     {
                         req.setAttribute(entry.getKey(), entry.getValue());
