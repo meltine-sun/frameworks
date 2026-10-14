@@ -6,6 +6,7 @@ import java.util.Map;
 public class ModelAndView {
     private String vue;
     private Map<String, Object> donnees = new HashMap<>();
+    private String redirect;
 
     public ModelAndView(String vue) {
         this.vue = vue;
@@ -35,6 +36,18 @@ public class ModelAndView {
 
     public void setDonnees(Map<String, Object> donnees) {
         this.donnees = donnees;
+    }
+
+    public String getRedirect() {
+        return redirect;
+    }
+
+    public void setRedirect(String redirect) {
+        this.redirect = redirect;
+    }
+
+    public void redirigerVers(String url){
+        this.redirect = url;
     }
 
     public void ajouterDonnee(String cle, Object valeur) {
