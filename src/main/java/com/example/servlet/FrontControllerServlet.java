@@ -13,6 +13,7 @@ import com.example.annotation.RestAPI;
 import com.example.annotation.UrlMapping;
 import com.example.util.MappingInfo;
 import com.example.util.ModelAndView;
+import com.example.util.UploadUtil;
 import com.example.util.UrlMethod;
 import com.example.util.Utilitaire;
 import com.google.gson.Gson;
@@ -21,7 +22,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.annotation.MultipartConfig;
 
+@MultipartConfig(
+    maxFileSize = 5 * 1024 * 1024,
+    maxRequestSize = 6 * 1024 * 1024
+)
 public class FrontControllerServlet extends HttpServlet{
   
     private Map<UrlMethod, MappingInfo> mapping = new HashMap<>();
@@ -63,7 +69,18 @@ public class FrontControllerServlet extends HttpServlet{
         String url = req.getRequestURI().substring(req.getContextPath().length());
         PrintWriter out = resp.getWriter();
 
-        Map<String, String[]> parametres = req.getParameterMap(); 
+        Map<String, String[]> parametres;
+        
+        try {
+            parametres = req.getParameterMap();
+        } catch (Exception e) {
+            if(UploadUtil.estDepassementTaille(e)) {
+                UploadUtil.repondreFichierTropVolumineux(req, resp);
+                return;
+            } else {
+                throw e;
+            }
+        }
                 
         String httpMethod = req.getMethod();
 
@@ -82,7 +99,7 @@ public class FrontControllerServlet extends HttpServlet{
                     throw new ServletException("Méthode introuvable : " + info.getNomMethod());
                 }
 
-                Object[] arguments = Utilitaire.getArguments(methode, parametres);
+                Object[] arguments = Utilitaire.getArguments(methode, parametres, req);
 
                 Object resultat = methode.invoke(instance, arguments);
 
@@ -117,6 +134,10 @@ public class FrontControllerServlet extends HttpServlet{
                 }
 
             } catch (Exception e) {
+                if (UploadUtil.estDepassementTaille(e)) {
+                    UploadUtil.repondreFichierTropVolumineux(req, resp);
+                    return;
+                }
                 throw new ServletException("Erreur lors de l'exécution de " + info.getNomClasse() + "." + info.getNomMethod(), e);
             }
 

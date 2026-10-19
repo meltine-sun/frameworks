@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.example.util.MapFile;
+import com.example.util.UploadUtil;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.example.annotation.UrlMapping;
 
@@ -134,7 +137,7 @@ public class Utilitaire {
         return methode;
     }
 
-    public static Object[] getArguments(Method methode, Map<String, String[]> parametres) {
+    public static Object[] getArguments(Method methode, Map<String, String[]> parametres, HttpServletRequest req) throws Exception {
 
         Parameter[] parametresMethode = methode.getParameters();
 
@@ -157,7 +160,15 @@ public class Utilitaire {
 
             Class<?> type = parametre.getType();
 
-            if (estTypeSimple(type)) {
+            if (type == MapFile.class) {
+
+                arguments[i] = UploadUtil.construireMapFile(
+                        req,
+                        nomParametre
+                );
+            }
+
+            else if (estTypeSimple(type)) {
 
                 String valeur = obtenirValeur(
                         parametres,
