@@ -16,6 +16,7 @@ import java.util.Map;
 import com.example.util.MapFile;
 import com.example.util.UploadUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import com.example.annotation.UrlMapping;
 
@@ -166,6 +167,19 @@ public class Utilitaire {
                         req,
                         nomParametre
                 );
+            }
+
+            else if (type == MySession.class) {
+                HttpSession sess = req.getSession();
+
+                @SuppressWarnings("unchecked")
+                Map<String, MySession> mapSession = (Map<String, MySession>) req.getServletContext().getAttribute("session");
+
+                String sessionId = sess.getId();
+
+                MySession mysession = mapSession.computeIfAbsent(sessionId, id -> new MySession(sess));
+
+                arguments[i] = mysession;
             }
 
             else if (estTypeSimple(type)) {
