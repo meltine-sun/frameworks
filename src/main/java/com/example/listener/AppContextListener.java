@@ -1,16 +1,20 @@
 package com.example.listener;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.example.annotation.Controller;
 import com.example.annotation.UrlMapping;
 import com.example.util.MappingInfo;
+import com.example.util.MySession;
 import com.example.util.UrlMethod;
 import com.example.util.Utilitaire;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.http.HttpSession;
 
 public class AppContextListener implements ServletContextListener {
 
@@ -24,6 +28,9 @@ public class AppContextListener implements ServletContextListener {
             Map<UrlMethod, MappingInfo> mapping = Utilitaire.getMapping(packageName, Controller.class, UrlMapping.class);
 
             context.setAttribute("mapping", mapping);
+
+            Map<String, MySession> mapSession = new ConcurrentHashMap<>();
+            context.setAttribute("session", mapSession);
 
             System.out.println("Chargement des routes terminé : " + mapping.size() + " route(s) trouvée(s).");
 
