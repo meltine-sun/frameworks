@@ -11,6 +11,7 @@ import java.util.Map;
 import com.example.annotation.Controller;
 import com.example.annotation.RestAPI;
 import com.example.annotation.UrlMapping;
+import com.example.util.AuthUtil;
 import com.example.util.MappingInfo;
 import com.example.util.ModelAndView;
 import com.example.util.UploadUtil;
@@ -97,6 +98,11 @@ public class FrontControllerServlet extends HttpServlet{
 
                 if(methode == null){
                     throw new ServletException("Méthode introuvable : " + info.getNomMethod());
+                }
+
+                if (AuthUtil.isAuthRequired(classe, methode) && !AuthUtil.isAuthenticated(req)){
+                    resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Vous devez être authentifié pour accéder à cette page.");
+                    return;
                 }
 
                 Object[] arguments = Utilitaire.getArguments(methode, parametres, req);

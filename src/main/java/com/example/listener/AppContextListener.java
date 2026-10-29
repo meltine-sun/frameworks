@@ -26,11 +26,13 @@ public class AppContextListener implements ServletContextListener {
             String packageName = context.getInitParameter("package");
 
             Map<UrlMethod, MappingInfo> mapping = Utilitaire.getMapping(packageName, Controller.class, UrlMapping.class);
-
             context.setAttribute("mapping", mapping);
 
             Map<String, MySession> mapSession = new ConcurrentHashMap<>();
             context.setAttribute("session", mapSession);
+
+            String sessionKey = context.getInitParameter("auth.sessionKey");
+            context.setAttribute("auth.sessionKey", sessionKey);
 
             System.out.println("Chargement des routes terminé : " + mapping.size() + " route(s) trouvée(s).");
 
