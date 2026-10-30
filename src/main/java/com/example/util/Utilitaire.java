@@ -161,7 +161,11 @@ public class Utilitaire {
 
             Class<?> type = parametre.getType();
 
-            if (type == MapFile.class) {
+            if (type == HttpServletRequest.class) {
+                arguments[i] = req;
+            }
+
+            else if (type == MapFile.class) {
 
                 arguments[i] = UploadUtil.construireMapFile(
                         req,

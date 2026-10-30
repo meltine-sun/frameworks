@@ -10,4 +10,6 @@
 /home/sundy/s4/WebDyna/projet/frameworks/src/main/java/com/example/util/ModelAndView.java
 /home/sundy/s4/WebDyna/projet/frameworks/src/main/java/com/example/util/MapFile.java
 /home/sundy/s4/WebDyna/projet/frameworks/src/main/java/com/example/annotation/RestAPI.java
+/home/sundy/s4/WebDyna/projet/frameworks/src/main/java/com/example/util/AuthUtil.java
 /home/sundy/s4/WebDyna/projet/frameworks/src/main/java/com/example/listener/AppContextListener.java
+/home/sundy/s4/WebDyna/projet/frameworks/src/main/java/com/example/annotation/Auth.java

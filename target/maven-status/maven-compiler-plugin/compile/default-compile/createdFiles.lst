@@ -8,6 +8,8 @@ com/example/util/MySession.class
 com/example/listener/AppContextListener.class
 com/example/util/ModelAndView.class
 com/example/annotation/UrlMapping.class
+com/example/annotation/Auth.class
 com/example/annotation/Controller.class
+com/example/util/AuthUtil.class
 com/example/annotation/RestAPI.class
 com/example/util/MapFile.class
