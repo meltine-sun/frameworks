@@ -3,8 +3,6 @@ package com.example.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -100,8 +98,7 @@ public class FrontControllerServlet extends HttpServlet{
                     throw new ServletException("Méthode introuvable : " + info.getNomMethod());
                 }
 
-                if (AuthUtil.isAuthRequired(classe, methode) && !AuthUtil.isAuthenticated(req)){
-                    resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Vous devez être authentifié pour accéder à cette page.");
+                if (!AuthUtil.verifier(req, resp, classe, methode)){
                     return;
                 }
 
@@ -139,6 +136,8 @@ public class FrontControllerServlet extends HttpServlet{
                     out.println(resultat.toString());
                 }
 
+            } catch (IOException e) {
+                throw e;
             } catch (Exception e) {
                 if (UploadUtil.estDepassementTaille(e)) {
                     UploadUtil.repondreFichierTropVolumineux(req, resp);
