@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import com.example.util.MapFile;
 import com.example.util.UploadUtil;
+
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -516,5 +518,30 @@ public class Utilitaire {
         if (type == char.class) return '\0';
 
         return null;
+    }
+
+    public static void instancierControllers(Map<UrlMethod, MappingInfo> mapping) throws Exception {
+
+        Map<String, Object> instances = new HashMap<>();
+
+        for (MappingInfo info : mapping.values()) {
+
+            if (info.getInstance() != null) {
+                continue;
+            }
+
+            Object instance = instances.get(info.getNomClasse());
+
+            if (instance == null) {
+                Constructor<?> constructeur =
+                        Class.forName(info.getNomClasse()).getDeclaredConstructor();
+                constructeur.setAccessible(true);
+
+                instance = constructeur.newInstance();
+                instances.put(info.getNomClasse(), instance);
+            }
+
+            info.setInstance(instance);
+        }
     }
 }
