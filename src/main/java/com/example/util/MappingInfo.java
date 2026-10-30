@@ -4,6 +4,7 @@ public class MappingInfo {
     private String nomClasse;
     private String nomMethod;
     private String url;
+    private Object instance;
 
     public MappingInfo(String nomClasse, String nomMethod, String url) {
         this.nomClasse = nomClasse;
@@ -33,6 +34,14 @@ public class MappingInfo {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public Object getInstance() {
+        return instance;
+    }
+
+    public void setInstance(Object instance) {
+        this.instance = instance;
     }
 
     @Override

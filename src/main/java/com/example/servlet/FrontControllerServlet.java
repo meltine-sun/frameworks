@@ -48,6 +48,12 @@ public class FrontControllerServlet extends HttpServlet{
                 throw new ServletException(e);
             }
         }
+
+        try {
+            Utilitaire.instancierControllers(mapping);
+        } catch (Exception e) {
+            throw new ServletException("Erreur lors de l'instanciation des controllers", e);
+        }
     }
 
     @Override
@@ -90,7 +96,7 @@ public class FrontControllerServlet extends HttpServlet{
 
             try {
                 Class<?> classe = Class.forName(info.getNomClasse());
-                Object instance = classe.getDeclaredConstructor().newInstance();
+                Object instance = info.getInstance();
 
                 Method methode = Utilitaire.trouverMethode(classe, info.getNomMethod());
 
