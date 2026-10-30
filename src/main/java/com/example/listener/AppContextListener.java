@@ -34,6 +34,9 @@ public class AppContextListener implements ServletContextListener {
             String sessionKey = context.getInitParameter("auth.sessionKey");
             context.setAttribute("auth.sessionKey", sessionKey);
 
+            String roleKey = context.getInitParameter("auth.roleKey");
+            context.setAttribute("auth.roleKey", roleKey);
+
             System.out.println("Chargement des routes terminé : " + mapping.size() + " route(s) trouvée(s).");
 
         } catch (Exception e) {
